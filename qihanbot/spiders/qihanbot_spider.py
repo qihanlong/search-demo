@@ -1,8 +1,9 @@
+from datetime import datetime
 import logging
 import scrapy
-from urllib.parse import urlparse
 from scrapy.utils.request import fingerprint
 from scrapy.exceptions import CloseSpider
+from urllib.parse import urlparse
 
 
 class QihanBot(scrapy.Spider):
@@ -56,26 +57,24 @@ class QihanBot(scrapy.Spider):
                 self.allowed_domains.add(domain_key)
 
     def parse(self, response):
-        yield {'type': 'response', 'url': response.url,
-            'request_url': response.request.url,
-            'request_method': response.request.method,
-            'request_body': response.request.body,
-            'request_fp': fingerprint(response.request)}
-        
         content_type = response.headers.get('Content-Type')
-        if str(content_type).startswith('text/html'):
+        if content_type.startswith(b'text/html'):
+            yield {'url': response.url,
+                'body': response.xpath('//body').get(),
+                'title': response.xpath('//title').get(),
+                'date': datetime.today()}
             next_urls = response.xpath('//a/@href').getall()
             for next_url in next_urls:
-                next_request = response.follow(next_url) 
+                next_request = response.follow(next_url)
+                if not next_request.url.startswith('http'):
+                    continue
                 parsed_url = urlparse(next_request.url)
                 # We're looking for documentation, so prioritize documentation related keywords
                 for keyword in self.priority_keywords:
                     if keyword in parsed_url.path:
                         next_request.priority += 1
                     if keyword in parsed_url.netloc:
-                        next_request.priority += 1                   
-                yield {'type': 'request', 'url': next_request.url,
-                    'fp': fingerprint(next_request)}
+                        next_request.priority += 1
                 yield next_request
 
 

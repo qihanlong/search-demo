@@ -6,7 +6,8 @@ def getIndex(path_root='.'):
     schema_builder = tantivy.SchemaBuilder()
     schema_builder.add_text_field("title", stored=True)
     schema_builder.add_text_field("body", stored=True)
-    schema_builder.add_integer_field("doc_id",stored=True)
+    schema_builder.add_text_field("url",stored=True)
+    schema_builder.add_date_field("retrieval_date",stored=True)
     schema = schema_builder.build()
 
     # Creating our index (in memory)
