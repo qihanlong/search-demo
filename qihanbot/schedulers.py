@@ -8,8 +8,8 @@ class QihanScheduler(Scheduler):
         self, dupefilter, jobdir, dqclass, mqclass, logunser, stats, pqclass, crawler
     ):
         super().__init__(dupefilter, jobdir, dqclass, mqclass, logunser, stats, pqclass, crawler)
-        self.max_downloads = 100
-        self.max_downloads_per_domain = 10
+        self.max_downloads = 500
+        self.max_downloads_per_domain = 100
         self.domains = set()
         self.count = 0
         self.count_per_domain = {}
