@@ -14,8 +14,10 @@ class QihanBot(scrapy.Spider):
         'http://swift.org/',
         'http://nginx.org/'
     ]
-    allowed_domains = {'angular.io', 'nginx.org', 'swift.org', 'api.drupal.org'}
+    allowed_domains = {}
     # allowed_domains = {'swift.org'}
+    max_downloads = 100
+    max_downloads_per_domain = 10
     custom_settings = {
         'CONCURRENT_REQUESTS_PER_DOMAIN': 1,
         'DOWNLOAD_DELAY': 0.1,
@@ -26,8 +28,38 @@ class QihanBot(scrapy.Spider):
     }
     priority_keywords = ['doc', 'api']
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config=None, *args, **kwargs):
+        super(QihanBot, self).__init__(*args, **kwargs)
+        logging.info("qihanbot __init__")
+        if config:
+            logging.info("opening " + config)
+            with open(config, 'r') as file:
+                mode = None
+                for line in file:
+                    line = line.strip(' \n')
+                    logging.info(line)
+                    if line == 'start_urls:':
+                        mode = 'start_urls'
+                        self.start_urls = []
+                        continue
+                    if line == 'additional_allowed_domains:':
+                        mode = 'additional_allowed_domains'
+                        self.allowed_domains = set()
+                        continue
+                    if line.startswith('max_downloads:'):
+                        val = line.removeprefix('max_downloads:')
+                        self.max_downloads = int(val)
+                        mode = None
+                        continue
+                    if line.startswith('max_downloads_per_domain:'):
+                        val = line.removeprefix('max_downloads_per_domain:')
+                        self.max_downloads_per_domain = int(val)
+                        mode = None
+                        continue
+                    if mode == 'start_urls' and len(line) > 0:
+                        self.start_urls.append(line)
+                    elif mode == 'additional_allowed_domains' and len(line) > 0:
+                        self.allowed_domains.add(line)
         self.updateAllowedDomains()
 
     def matchDomain(self, url):
@@ -47,6 +79,7 @@ class QihanBot(scrapy.Spider):
         return ''
 
     def updateAllowedDomains(self):
+        logging.info("updateAllowedDomains called")
         if not isinstance(self.allowed_domains, list):
             self.allowed_domains = set(self.allowed_domains)
         if not isinstance(self.allowed_domains, set):
@@ -65,6 +98,8 @@ class QihanBot(scrapy.Spider):
                 'date': datetime.today()}
             next_urls = response.xpath('//a/@href').getall()
             for next_url in next_urls:
+                if next_url.startswith('mailto:'):
+                   continue
                 next_request = response.follow(next_url)
                 if not next_request.url.startswith('http'):
                     continue

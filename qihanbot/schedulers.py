@@ -8,8 +8,8 @@ class QihanScheduler(Scheduler):
         self, dupefilter, jobdir, dqclass, mqclass, logunser, stats, pqclass, crawler
     ):
         super().__init__(dupefilter, jobdir, dqclass, mqclass, logunser, stats, pqclass, crawler)
-        self.max_downloads = 500
-        self.max_downloads_per_domain = 100
+        self.max_downloads = 100
+        self.max_downloads_per_domain = 10
         self.domains = set()
         self.count = 0
         self.count_per_domain = {}
@@ -34,6 +34,10 @@ class QihanScheduler(Scheduler):
     def open(self, spider):
         if spider.allowed_domains:
             self.domains.update(spider.allowed_domains)
+        if hasattr(spider, 'max_downloads'):
+            self.max_downloads = spider.max_downloads
+        if hasattr(spider, 'max_downloads_per_domain'):
+            self.max_downloads_per_domain = spider.max_downloads_per_domain
         return super().open(spider)
         
     
@@ -43,8 +47,8 @@ class QihanScheduler(Scheduler):
             return False
         domain_key = self.matchDomain(request.url)
         if self.max_downloads_per_domain >= 0 and self.count_per_domain.get(domain_key, 0) >= self.max_downloads_per_domain:
-                logging.info("Max downloads reached for domain <" + domain_key + ">. Dropping request to <" + request.url + ">")
-                return False
+            logging.info("Max downloads reached for domain <" + domain_key + ">. Dropping request to <" + request.url + ">")
+            return False
         enqueued = super().enqueue_request(request)
         if enqueued:
             self.count += 1

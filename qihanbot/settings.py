@@ -93,3 +93,6 @@ AUTOTHROTTLE_DEBUG = False
 
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
+
+# LOG_FILE = 'logs.txt'
+# LOG_FILE_APPEND = False
