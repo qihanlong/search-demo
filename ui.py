@@ -1,7 +1,14 @@
 import gradio as gr
 import qihan_index
 import tantivy
+from tantivy import SnippetGenerator
 from bs4 import BeautifulSoup
+
+print("Loading index")
+schema = qihan_index.getSchema()
+index = qihan_index.getIndex(schema=schema)
+index.reload()
+searcher = index.searcher()
 
 def run_search(query) -> str | None:
     if len(query) == 0:
@@ -9,22 +16,22 @@ def run_search(query) -> str | None:
     query = index.parse_query(query, ["title", "body"])
     output = ""
     results = searcher.search(query, 3).hits
+    
+    snippet_generator = SnippetGenerator.create(
+        searcher, query, schema, "body"
+    )
     for i in range(min(len(results), 10)):
         (score, doc_address) = results[i]
         doc = searcher.doc(doc_address)
-        print(doc["title"][0])
         title = BeautifulSoup(doc["title"][0], "lxml").text
-        formatted_text = "# " + title
+        snippet = snippet_generator.snippet_from_doc(doc)
+        formatted_text = "# [" + title + "](" + doc["url"][0] + ")  \n" + snippet.fragment()
+        print(formatted_text)
         if output == '':
             output = formatted_text
         else:
             output = output + "\n\n" + formatted_text
     return output
-
-print("Loading index")
-index = qihan_index.getIndex()
-index.reload()
-searcher = index.searcher()
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
