@@ -34,9 +34,9 @@ class QihanScheduler(Scheduler):
     def open(self, spider):
         if spider.allowed_domains:
             self.domains.update(spider.allowed_domains)
-        if hasattr(spider, 'max_downloads'):
+        if hasattr(spider, "max_downloads"):
             self.max_downloads = spider.max_downloads
-        if hasattr(spider, 'max_downloads_per_domain'):
+        if hasattr(spider, "max_downloads_per_domain"):
             self.max_downloads_per_domain = spider.max_downloads_per_domain
         return super().open(spider)
         

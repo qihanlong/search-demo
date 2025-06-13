@@ -13,8 +13,12 @@ def run_search(query) -> str | None:
         (score, doc_address) = results[i]
         doc = searcher.doc(doc_address)
         print(doc["title"][0])
-        cleantext = BeautifulSoup(doc["title"][0], "lxml").text
-        output = output + "\n\n" + cleantext
+        title = BeautifulSoup(doc["title"][0], "lxml").text
+        formatted_text = "# " + title
+        if output == '':
+            output = formatted_text
+        else:
+            output = output + "\n\n" + formatted_text
     return output
 
 print("Loading index")
