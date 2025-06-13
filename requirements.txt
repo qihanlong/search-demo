@@ -1,3 +1,4 @@
 gradio
 tantivy
 scrapy
+bs4
