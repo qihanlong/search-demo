@@ -30,7 +30,6 @@ class QihanBot(scrapy.Spider):
 
     def __init__(self, config=None, *args, **kwargs):
         super(QihanBot, self).__init__(*args, **kwargs)
-        logging.info("qihanbot __init__")
         if config:
             logging.info("opening " + config)
             with open(config, 'r') as file:
@@ -94,7 +93,8 @@ class QihanBot(scrapy.Spider):
         if content_type.startswith(b"text/html"):
             yield {"url": response.url,
                 "body": response.xpath("//body").get(),
-                "title": response.xpath("//title").get(),
+                "title": response.xpath("//title/text()").get(),
+                "text": response.xpath("//p/text()").getall(),
                 "date": datetime.today()}
             next_urls = response.xpath("//a/@href").getall()
             for next_url in next_urls:

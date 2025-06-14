@@ -1,0 +1,1 @@
+scrapy crawl qihanbot -a config=minicrawl.config

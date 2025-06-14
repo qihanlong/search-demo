@@ -13,17 +13,17 @@ searcher = index.searcher()
 def run_search(query) -> str | None:
     if len(query) == 0:
         return None
-    query = index.parse_query(query, ["title", "body"])
+    query = index.parse_query(query, ["title", "text"])
     output = ""
     results = searcher.search(query, 3).hits
     
     snippet_generator = SnippetGenerator.create(
-        searcher, query, schema, "body"
+        searcher, query, schema, "text"
     )
     for i in range(min(len(results), 10)):
         (score, doc_address) = results[i]
         doc = searcher.doc(doc_address)
-        title = BeautifulSoup(doc["title"][0], "lxml").text
+        title = doc["title"][0]
         snippet = snippet_generator.snippet_from_doc(doc)
         formatted_text = "# [" + title + "](" + doc["url"][0] + ")  \n" + snippet.fragment()
         print(formatted_text)
