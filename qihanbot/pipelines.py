@@ -16,6 +16,10 @@ class QihanbotPipeline:
     domains_crawled = {}
     total_indexed = 0
     domains_indexed = {}
+    urls_seen = 0
+    domains_seen = {}
+    mail_seen = 0
+    phone_seen = 0
     
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
@@ -23,6 +27,10 @@ class QihanbotPipeline:
             self.process_url_seen(adapter)
         elif adapter.get("type") == "crawl":
             self.process_crawl_result(adapter)
+        elif adapter.get("type") == "mail":
+            self.process_mail(adapter)
+        elif adapter.get("type") == "phone":
+            self.process_phone(adapter)
         return item
     
     def process_crawl_result(self, adapter):
@@ -41,6 +49,16 @@ class QihanbotPipeline:
             self.total_indexed += 1
 
     def process_url_seen(self, adapter):
+        self.urls_seen += 1
+        self.domains_seen[adapter.get("domain")] = self.domains_seen.get(adapter.get("domain"), 0) + 1
+        return
+
+    def process_mail(self, adapter):
+        self.mail_seen += 1
+        return
+
+    def process_phone(self, adapter):
+        self.phone_seen += 1
         return
         
     def open_spider(self, spider):
@@ -52,3 +70,13 @@ class QihanbotPipeline:
         self.index_writer.wait_merging_threads()
         with open("stats.txt", 'a') as stats_file:
             stats_file.write("total_crawled: " + str(self.total_crawled))
+            stats_file.write("\ntotal_indexed: " + str(self.total_indexed))
+            stats_file.write("\nurls_seen: " + str(self.urls_seen))
+            stats_file.write("\nmail_seen: " + str(self.mail_seen))
+            stats_file.write("\nphone_seen: " + str(self.phone_seen))
+            for domain in self.domains_crawled:
+                stats_file.write("\ndomain_crawled:" + domain + " " + str(self.domains_crawled[domain]))
+            for domain in self.domains_indexed:
+                stats_file.write("\ndomain_indexed:" + domain + " " + str(self.domains_indexed[domain]))
+            for domain in self.domains_seen:
+                stats_file.write("\ndomain_seen:" + domain + " " + str(self.domains_seen[domain]))

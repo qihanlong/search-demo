@@ -10,10 +10,6 @@ import crawl_util
 class QihanBot(scrapy.Spider):
     name = "qihanbot"
     start_urls = [
-        "http://angular.io/",
-        "http://api.drupal.org/",
-        "http://swift.org/",
-        "http://nginx.org/"
     ]
     allowed_domains = {}
     # allowed_domains = {"swift.org"}
@@ -86,7 +82,7 @@ class QihanBot(scrapy.Spider):
                 if next_url.startswith("mailto:"):
                     yield {"type": "mail", "url": next_url}
                     continue
-                if next_url.startswith("tel::"):
+                if next_url.startswith("tel:"):
                     yield {"type": "phone", "url": next_url}
                     continue
                 next_request = response.follow(next_url)

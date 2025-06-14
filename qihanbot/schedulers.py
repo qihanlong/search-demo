@@ -29,13 +29,13 @@ class QihanScheduler(Scheduler):
         if self.max_downloads >= 0 and self.count >= self.max_downloads:
             self.count += 1
             if self.count < self.max_downloads + 10:
-                logging.info("Max downloads reached. Dropping request to <" + request.url + ">")
+                logging.debug("Max downloads reached. Dropping request to <" + request.url + ">")
             return False
         domain_key = crawl_util.matchDomain(self.domains, request.url)
         if self.max_downloads_per_domain >= 0 and self.count_per_domain.get(domain_key, 0) >= self.max_downloads_per_domain:
             self.count_per_domain[domain_key] += 1
             if self.count_per_domain[domain_key] < self.max_downloads_per_domain + 10:
-                logging.info("Max downloads reached for domain <" + domain_key + ">. Dropping request to <" + request.url + ">")
+                logging.debug("Max downloads reached for domain <" + domain_key + ">. Dropping request to <" + request.url + ">")
             return False
         enqueued = super().enqueue_request(request)
         if enqueued:
