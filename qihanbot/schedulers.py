@@ -1,6 +1,7 @@
 import logging
 from scrapy.core.scheduler import Scheduler
-from urllib.parse import urlparse
+
+import crawl_util
 
 # A scheduler class that implements a max crawl count and max crawl per domain enforcement.
 class QihanScheduler(Scheduler):
@@ -13,23 +14,6 @@ class QihanScheduler(Scheduler):
         self.domains = set()
         self.count = 0
         self.count_per_domain = {}
-        
-    # TODO: move to util file?
-    def matchDomain(self, url):
-        domain = urlparse(url).netloc
-        # Majority of the time, the domain should be an exact match
-        if domain in self.domains:
-            return domain
-        # Check for subdomain matches starting with the longest.
-        split_domain = domain.split('.')
-        for i in range(1, len(split_domain)):
-            d = '.'.join(split_domain[i:])
-            if d in self.domains:
-                return d
-        if len(split_domain) >= 2:
-            # If it's not found, just return the second level domain.
-            return '.'.join(split_domain[-2:])
-        return ''
         
     def open(self, spider):
         if spider.allowed_domains:
@@ -47,7 +31,7 @@ class QihanScheduler(Scheduler):
             if self.count < self.max_downloads + 10:
                 logging.info("Max downloads reached. Dropping request to <" + request.url + ">")
             return False
-        domain_key = self.matchDomain(request.url)
+        domain_key = crawl_util.matchDomain(self.domains, request.url)
         if self.max_downloads_per_domain >= 0 and self.count_per_domain.get(domain_key, 0) >= self.max_downloads_per_domain:
             self.count_per_domain[domain_key] += 1
             if self.count_per_domain[domain_key] < self.max_downloads_per_domain + 10:

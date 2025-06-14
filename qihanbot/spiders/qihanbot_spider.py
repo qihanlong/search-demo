@@ -5,6 +5,7 @@ from scrapy.utils.request import fingerprint
 from scrapy.exceptions import CloseSpider
 from urllib.parse import urlparse
 
+import crawl_util
 
 class QihanBot(scrapy.Spider):
     name = "qihanbot"
@@ -21,12 +22,10 @@ class QihanBot(scrapy.Spider):
     custom_settings = {
         "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
         "DOWNLOAD_DELAY": 0.1,
-        "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot",
+        "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
         "ROBOTSTXT_USER_AGENT": "qihanbot",
-        # "DUPEFILTER_CLASS": "scrapy.dupefilters.RFPDupeFilter",
-        # "DUPEFILTER_DEBUG": True
     }
-    priority_keywords = ["doc", "api"]
+    priority_keywords = {"doc":1, "api":1, "forum":-2, "community":-2, "bug":-1, "user":-2}
 
     def __init__(self, config=None, *args, **kwargs):
         super(QihanBot, self).__init__(*args, **kwargs)
@@ -61,7 +60,7 @@ class QihanBot(scrapy.Spider):
                         self.allowed_domains.add(line)
         self.updateAllowedDomains()
 
-    def matchDomain(self, url):
+    def matchDomain2(self, url):
         domain = urlparse(url).netloc
         # Majority of the time, the domain should be an exact match
         if domain in self.allowed_domains:
@@ -84,7 +83,7 @@ class QihanBot(scrapy.Spider):
         if not isinstance(self.allowed_domains, set):
             self.allowed_domains = set()
         for url in self.start_urls:
-            domain_key = self.matchDomain(url)
+            domain_key = crawl_util.matchDomain(self.allowed_domains, url)
             if len(domain_key) > 0:
                 self.allowed_domains.add(domain_key)
 
@@ -107,9 +106,9 @@ class QihanBot(scrapy.Spider):
                 # We're looking for documentation, so prioritize documentation related keywords
                 for keyword in self.priority_keywords:
                     if keyword in parsed_url.path:
-                        next_request.priority += 1
+                        next_request.priority += self.priority_keywords[keyword]
                     if keyword in parsed_url.netloc:
-                        next_request.priority += 1
+                        next_request.priority += self.priority_keywords[keyword]
                 yield next_request
 
 

@@ -7,8 +7,9 @@
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
 import logging
-import qihan_index
 import tantivy
+
+import qihan_index
 
 class QihanbotPipeline:
     def process_item(self, item, spider):

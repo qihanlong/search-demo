@@ -1,6 +1,7 @@
 import gradio as gr
 import qihan_index
 import tantivy
+import time
 from tantivy import SnippetGenerator
 from bs4 import BeautifulSoup
 
@@ -13,9 +14,11 @@ searcher = index.searcher()
 def run_search(query) -> str | None:
     if len(query) == 0:
         return None
+    search_start_time = time.time()
     query = index.parse_query(query, ["title", "text"])
     output = ""
-    results = searcher.search(query, 3).hits
+    results = searcher.search(query, 10).hits
+    search_end_time = time.time()
     
     snippet_generator = SnippetGenerator.create(
         searcher, query, schema, "text"
@@ -31,6 +34,9 @@ def run_search(query) -> str | None:
             output = formatted_text
         else:
             output = output + "\n\n" + formatted_text
+    results_parse_end_time = time.time()
+    search_time_ms = (results_parse_end_time - search_start_time) * 1000
+    output = output + "\n\n\n\nSearch took " + str(search_time_ms) + " ms."
     return output
 
 print("Launching UI")

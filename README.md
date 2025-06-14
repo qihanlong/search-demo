@@ -12,11 +12,10 @@ Simple crawl and search engine.
 - Basic querying from index
 - Set up crawl settings for easy switching between small and full scale crawls
 - Snippet support
+- Search latency
 
 ## TODO
 - Search statistics
-- Check latency
-- Organize code
 - Improve crawl url selection
 - Improve search rankings
 - Debug full scale crawl and indexing
