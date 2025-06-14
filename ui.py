@@ -79,29 +79,35 @@ def domainToMarkdown(domain):
         markdown += "\n\nurls seen: " + str(domain["domain_seen"])
     return markdown
 
-def createDomainOverview(domain_list, query=""):
+def createDomainOverview(query=""):
     markdown = "# Domain Statistics"
-    for i in range(100):
-        markdown += domainToMarkdown(domain_list[i])
+    j = 0
+    empty_query = (query == "")
+    for i in range(len(domain_stats_list)):
+        if empty_query or (query in domain_stats_list[i]["domain"]):
+            markdown += domainToMarkdown(domain_stats_list[i])
+            j += 1
+            if j >= 100:
+                break
     return markdown
     
 def compareDomainStats(domain1, domain2):
     if domain1.get("domain_indexed", 0) > domain2.get("domain_indexed", 0):
-        return 1
+        return -1
     if domain1.get("domain_indexed", 0) < domain2.get("domain_indexed", 0):
-        return -1
+        return 1
     if domain1.get("domain_crawled", 0) > domain2.get("domain_crawled", 0):
-        return 1
+        return -1
     if domain1.get("domain_crawled", 0) < domain2.get("domain_crawled", 0):
-        return -1
+        return 1
     if domain1.get("domain_seen", 0) > domain2.get("domain_seen", 0):
-        return 1
+        return -1
     if domain1.get("domain_seen", 0) < domain2.get("domain_seen", 0):
-        return -1
-    if domain1["domain"] < domain2["domain"]:
         return 1
-    if domain1["domain"] > domain2["domain"]:
+    if domain1["domain"] < domain2["domain"]:
         return -1
+    if domain1["domain"] > domain2["domain"]:
+        return 1
     return 0
 
 print("Loading index")
@@ -113,7 +119,7 @@ searcher = index.searcher()
 domain_stats_list = []
 for item in domain_stats:
     domain_stats_list.append(domain_stats[item])
-sorted(domain_stats_list, key=cmp_to_key(compareDomainStats))
+domain_stats_list = sorted(domain_stats_list, key=cmp_to_key(compareDomainStats))
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
@@ -125,6 +131,8 @@ with gr.Blocks() as search_ui:
         button.click(run_search, inputs=textbox, outputs=results)
     with gr.Accordion("Statistics", open=False):
         gr.Markdown(createStatsOverview())
-        gr.Markdown(createDomainOverview(domain_stats_list))
+        textbox = gr.Textbox(lines=1, show_label=False)
+        domain_stats_markdown = gr.Markdown(createDomainOverview())
+        textbox.change(createDomainOverview, inputs=textbox, outputs=domain_stats_markdown)
 
 search_ui.launch(share=False)
