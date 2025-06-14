@@ -4,12 +4,6 @@ import tantivy
 import time
 from tantivy import SnippetGenerator
 
-print("Loading index")
-schema = qihan_index.getSchema()
-index = qihan_index.getIndex(schema=schema)
-index.reload()
-searcher = index.searcher()
-
 def run_search(query) -> str | None:
     if len(query) == 0:
         return None
@@ -37,13 +31,60 @@ def run_search(query) -> str | None:
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
     output = output + "Search took " + str(search_time_ms) + " ms.\n\n\n\n"
     return output
+    
+def loadStats(filename="stats.txt"):
+    total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "mail_seen":0, "phone_seen":0}
+    domain_stats = {}
+    domain_keys = ["domain_crawled", "domain_indexed", "domain_seen"]
+    with open(filename, 'r') as file:
+        for line in file:
+            line = line.strip(" \n")
+            key_found = False
+            for key in total_stats:
+                if line.startswith(key + ": "):
+                    total_stats[key] += int(line.removeprefix(key + ": "))
+                    key_found = True
+                    break
+            if not key_found:
+                for key in domain_keys:
+                    if line.startswith(key + ":"):
+                        line = line.removeprefix(key + ":")
+                        i = line.rfind(' ')
+                        if i >= 0:
+                            domain = line[0:i]
+                            count = line[i:]
+                            if domain in domain_stats:
+                                domain_stats[domain][key] = domain_stats[domain].get(key, 0) + int(count)
+                            else:
+                                domain_stats[domain] = {}
+                                domain_stats[domain][key] = int(count)
+    return (total_stats, domain_stats)
+
+def createStatsOverview(query=""):
+    markdown = "## Overall Statistics\n"
+    markdown += "\n\nTotal Urls Crawled: " + str(total_stats["total_crawled"])
+    markdown += "\n\nTotal Urls Indexed: " + str(total_stats["total_indexed"])
+    markdown += "\n\nTotal Urls Seen: " + str(total_stats["urls_seen"])
+    markdown += "\n\nEmail Links Seen: " + str(total_stats["mail_seen"])
+    markdown += "\n\nPhone Links Seen: " + str(total_stats["phone_seen"])
+    return markdown
+
+print("Loading index")
+schema = qihan_index.getSchema()
+index = qihan_index.getIndex(schema=schema)
+index.reload()
+searcher = index.searcher()
+(total_stats, domain_stats) = loadStats()
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
-    with gr.Row(equal_height=True):
-        textbox = gr.Textbox(lines=1, show_label=False)
-        button = gr.Button("Search", variant="primary")
-    results = gr.Markdown("")
-    button.click(run_search, inputs=textbox, outputs=results)
+    with gr.Accordion("Search", open=True):
+        with gr.Row(equal_height=True):
+            textbox = gr.Textbox(lines=1, show_label=False)
+            button = gr.Button("Search", variant="primary")
+        results = gr.Markdown("")
+        button.click(run_search, inputs=textbox, outputs=results)
+    with gr.Accordion("Statistics", open=False):
+        stats = gr.Markdown(createStatsOverview())
 
 search_ui.launch(share=False)
