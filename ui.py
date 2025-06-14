@@ -3,7 +3,6 @@ import qihan_index
 import tantivy
 import time
 from tantivy import SnippetGenerator
-from bs4 import BeautifulSoup
 
 print("Loading index")
 schema = qihan_index.getSchema()
@@ -36,7 +35,7 @@ def run_search(query) -> str | None:
             output = output + "\n\n" + formatted_text
     results_parse_end_time = time.time()
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
-    output = output + "\n\n\n\nSearch took " + str(search_time_ms) + " ms."
+    output = output + "Search took " + str(search_time_ms) + " ms.\n\n\n\n"
     return output
 
 print("Launching UI")

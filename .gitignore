@@ -2,6 +2,7 @@
 /.gradio
 
 debug.txt
+stats.txt
 logs.txt
 
 *pycache*

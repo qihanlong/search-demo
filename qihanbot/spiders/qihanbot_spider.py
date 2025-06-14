@@ -25,7 +25,7 @@ class QihanBot(scrapy.Spider):
         "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
         "ROBOTSTXT_USER_AGENT": "qihanbot",
     }
-    priority_keywords = {"doc":1, "api":1, "forum":-2, "community":-2, "bug":-1, "user":-2}
+    priority_keywords = {"doc":2, "api":2, "ref":2, "forum":-2, "community":-2, "bug":-1, "user":-1, "issue":-1, "blog":-1}
 
     def __init__(self, config=None, *args, **kwargs):
         super(QihanBot, self).__init__(*args, **kwargs)
@@ -60,22 +60,6 @@ class QihanBot(scrapy.Spider):
                         self.allowed_domains.add(line)
         self.updateAllowedDomains()
 
-    def matchDomain2(self, url):
-        domain = urlparse(url).netloc
-        # Majority of the time, the domain should be an exact match
-        if domain in self.allowed_domains:
-            return domain
-        # Check for subdomain matches starting with the longest.
-        split_domain = domain.split('.')
-        for i in range(1, len(split_domain)):
-            d = '.'.join(split_domain[i:])
-            if d in self.allowed_domains:
-                return d
-        if len(split_domain) >= 2:
-            # If it's not found, just return the second level domain.
-            return '.'.join(split_domain[-2:])
-        return ''
-
     def updateAllowedDomains(self):
         logging.info("updateAllowedDomains called")
         if not isinstance(self.allowed_domains, list):
@@ -90,17 +74,24 @@ class QihanBot(scrapy.Spider):
     def parse(self, response):
         content_type = response.headers.get("Content-Type")
         if content_type.startswith(b"text/html"):
-            yield {"url": response.url,
+            yield {"type": "crawl",
+                "url": response.url,
                 "body": response.xpath("//body").get(),
                 "title": response.xpath("//title/text()").get(),
                 "text": response.xpath("//p/text()").getall(),
-                "date": datetime.today()}
+                "date": datetime.today(),
+                "domain": crawl_util.matchDomain(self.allowed_domains, response.url)}
             next_urls = response.xpath("//a/@href").getall()
             for next_url in next_urls:
                 if next_url.startswith("mailto:"):
-                   continue
+                    yield {"type": "mail", "url": next_url}
+                    continue
+                if next_url.startswith("tel::"):
+                    yield {"type": "phone", "url": next_url}
+                    continue
                 next_request = response.follow(next_url)
                 if not next_request.url.startswith("http"):
+                    yield {"type": "nonhttp", "url": next_request.url}
                     continue
                 parsed_url = urlparse(next_request.url)
                 # We're looking for documentation, so prioritize documentation related keywords
@@ -109,6 +100,7 @@ class QihanBot(scrapy.Spider):
                         next_request.priority += self.priority_keywords[keyword]
                     if keyword in parsed_url.netloc:
                         next_request.priority += self.priority_keywords[keyword]
+                yield {"type": "seen", "url": next_request.url, "domain": crawl_util.matchDomain(self.allowed_domains, next_request.url)}
                 yield next_request
 
 

@@ -96,3 +96,5 @@ FEED_EXPORT_ENCODING = "utf-8"
 
 # LOG_FILE = 'logs.txt'
 # LOG_FILE_APPEND = False
+
+LOG_LEVEL = 'INFO'
