@@ -12,7 +12,6 @@ class QihanBot(scrapy.Spider):
     start_urls = [
     ]
     allowed_domains = {}
-    # allowed_domains = {"swift.org"}
     max_downloads = 100
     max_downloads_per_domain = 10
     custom_settings = {
@@ -74,7 +73,9 @@ class QihanBot(scrapy.Spider):
                 "url": response.url,
                 "body": response.xpath("//body").get(),
                 "title": response.xpath("//title/text()").get(),
+                "headers": response.xpath("//h1/text()").getall() + response.xpath("//h2/text()").getall() + response.xpath("//h3/text()").getall() + response.xpath("//h4/text()").getall(),
                 "text": response.xpath("//p/text()").getall(),
+                "misc": response.xpath("//div/text()").getall() + response.xpath("//span/text()").getall(),
                 "date": datetime.today(),
                 "domain": crawl_util.matchDomain(self.allowed_domains, response.url)}
             next_urls = response.xpath("//a/@href").getall()

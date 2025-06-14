@@ -43,7 +43,9 @@ class QihanbotPipeline:
                 title=[title_text],
                 body=[body_text],
                 url=adapter.get("url"),
+                headers=adapter.get("headers"),
                 text=adapter.get("text"),
+                misc=adapter.get("misc"),
                 retrieval_date=[adapter.get("date")]))
             self.domains_indexed[adapter.get("domain")] = self.domains_indexed.get(adapter.get("domain"), 0) + 1
             self.total_indexed += 1

@@ -3,10 +3,12 @@ import tantivy
 
 def getSchema():
     schema_builder = tantivy.SchemaBuilder()
+    schema_builder.add_text_field("url",stored=True)
     schema_builder.add_text_field("title", stored=True)
     schema_builder.add_text_field("body", stored=True)
-    schema_builder.add_text_field("url",stored=True)
+    schema_builder.add_text_field("headers", stored=True)
     schema_builder.add_text_field("text",stored=True)
+    schema_builder.add_text_field("misc",stored=True)
     schema_builder.add_date_field("retrieval_date",stored=True)
     schema = schema_builder.build()
     return schema
