@@ -32,11 +32,14 @@ class QihanbotPipeline:
         elif adapter.get("type") == "phone":
             self.process_phone(adapter)
         return item
+        
+    def should_index(self, adapter):
+        return adapter.get("text") is not None and adapter.get("url") is not None
     
     def process_crawl_result(self, adapter):
         self.domains_crawled[adapter.get("domain")] = self.domains_crawled.get(adapter.get("domain"), 0) + 1
         self.total_crawled += 1
-        if adapter.get("text") is not None and adapter.get("url") is not None:
+        if self.should_index(adapter):
             title_text = adapter.get("title") or ''
             body_text = adapter.get("body") or ''
             self.index_writer.add_document(tantivy.Document(

@@ -1,3 +1,4 @@
+from functools import cmp_to_key
 import gradio as gr
 import qihan_index
 import tantivy
@@ -56,18 +57,52 @@ def loadStats(filename="stats.txt"):
                             if domain in domain_stats:
                                 domain_stats[domain][key] = domain_stats[domain].get(key, 0) + int(count)
                             else:
-                                domain_stats[domain] = {}
-                                domain_stats[domain][key] = int(count)
+                                domain_stats[domain] = {"domain": domain, key: int(count)}
     return (total_stats, domain_stats)
 
-def createStatsOverview(query=""):
-    markdown = "## Overall Statistics\n"
+def createStatsOverview():
+    markdown = "# Overall Statistics"
     markdown += "\n\nTotal Urls Crawled: " + str(total_stats["total_crawled"])
     markdown += "\n\nTotal Urls Indexed: " + str(total_stats["total_indexed"])
     markdown += "\n\nTotal Urls Seen: " + str(total_stats["urls_seen"])
     markdown += "\n\nEmail Links Seen: " + str(total_stats["mail_seen"])
     markdown += "\n\nPhone Links Seen: " + str(total_stats["phone_seen"])
     return markdown
+    
+def domainToMarkdown(domain):
+    markdown = "\n## " + domain["domain"]
+    if "domain_indexed" in domain:
+        markdown += "\n\nurls indexed: " + str(domain["domain_indexed"])
+    if "domain_crawled" in domain:
+        markdown += "\n\nurls crawled: " + str(domain["domain_crawled"])
+    if "domain_seen" in domain:
+        markdown += "\n\nurls seen: " + str(domain["domain_seen"])
+    return markdown
+
+def createDomainOverview(domain_list, query=""):
+    markdown = "# Domain Statistics"
+    for i in range(100):
+        markdown += domainToMarkdown(domain_list[i])
+    return markdown
+    
+def compareDomainStats(domain1, domain2):
+    if domain1.get("domain_indexed", 0) > domain2.get("domain_indexed", 0):
+        return 1
+    if domain1.get("domain_indexed", 0) < domain2.get("domain_indexed", 0):
+        return -1
+    if domain1.get("domain_crawled", 0) > domain2.get("domain_crawled", 0):
+        return 1
+    if domain1.get("domain_crawled", 0) < domain2.get("domain_crawled", 0):
+        return -1
+    if domain1.get("domain_seen", 0) > domain2.get("domain_seen", 0):
+        return 1
+    if domain1.get("domain_seen", 0) < domain2.get("domain_seen", 0):
+        return -1
+    if domain1["domain"] < domain2["domain"]:
+        return 1
+    if domain1["domain"] > domain2["domain"]:
+        return -1
+    return 0
 
 print("Loading index")
 schema = qihan_index.getSchema()
@@ -75,6 +110,10 @@ index = qihan_index.getIndex(schema=schema)
 index.reload()
 searcher = index.searcher()
 (total_stats, domain_stats) = loadStats()
+domain_stats_list = []
+for item in domain_stats:
+    domain_stats_list.append(domain_stats[item])
+sorted(domain_stats_list, key=cmp_to_key(compareDomainStats))
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
@@ -85,6 +124,7 @@ with gr.Blocks() as search_ui:
         results = gr.Markdown("")
         button.click(run_search, inputs=textbox, outputs=results)
     with gr.Accordion("Statistics", open=False):
-        stats = gr.Markdown(createStatsOverview())
+        gr.Markdown(createStatsOverview())
+        gr.Markdown(createDomainOverview(domain_stats_list))
 
 search_ui.launch(share=False)
