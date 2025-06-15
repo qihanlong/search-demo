@@ -13,10 +13,10 @@ Simple crawl and search engine.
 - Set up crawl settings for easy switching between small and full scale crawls
 - Snippet support
 - Search latency
+- Search statistics
 
 ## TODO
-- Search statistics
 - Improve crawl url selection
 - Improve search rankings
-- Debug full scale crawl and indexing
+- Test full scale crawl and indexing
 - Write documentation
