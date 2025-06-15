@@ -75,15 +75,18 @@ def loadStats(filename="stats.txt"):
                                 domain_stats[domain][key] = domain_stats[domain].get(key, 0) + int(count)
                             else:
                                 domain_stats[domain] = {"domain": domain, key: int(count)}
-    return (total_stats, domain_stats)
+    domain_stats_list = []
+    for item in domain_stats:
+        domain_stats_list.append(domain_stats[item])
+    return (total_stats, domain_stats_list)
 
 def createStatsOverview():
     markdown = "# Overall Statistics"
-    markdown += "\n\nTotal Urls Crawled: " + str(total_stats["total_crawled"])
-    markdown += "\n\nTotal Urls Indexed: " + str(total_stats["total_indexed"])
-    markdown += "\n\nTotal Urls Seen: " + str(total_stats["urls_seen"])
-    markdown += "\n\nEmail Links Seen: " + str(total_stats["mail_seen"])
-    markdown += "\n\nPhone Links Seen: " + str(total_stats["phone_seen"])
+    markdown += "\n\nTotal Urls Crawled: " + str(stats["total_stats"]["total_crawled"])
+    markdown += "\n\nTotal Urls Indexed: " + str(stats["total_stats"]["total_indexed"])
+    markdown += "\n\nTotal Urls Seen: " + str(stats["total_stats"]["urls_seen"])
+    markdown += "\n\nEmail Links Seen: " + str(stats["total_stats"]["mail_seen"])
+    markdown += "\n\nPhone Links Seen: " + str(stats["total_stats"]["phone_seen"])
     return markdown
     
 def domainToMarkdown(domain):
@@ -100,9 +103,9 @@ def createDomainOverview(query=""):
     markdown = "# Domain Statistics"
     j = 0
     empty_query = (query == "")
-    for i in range(len(domain_stats_list)):
-        if empty_query or (query in domain_stats_list[i]["domain"]):
-            markdown += domainToMarkdown(domain_stats_list[i])
+    for i in range(len(stats["domain_stats"])):
+        if empty_query or (query in stats["domain_stats"][i]["domain"]):
+            markdown += domainToMarkdown(stats["domain_stats"][i])
             j += 1
             if j >= 100:
                 break
@@ -127,16 +130,25 @@ def compareDomainStats(domain1, domain2):
         return 1
     return 0
 
-print("Loading index")
+def reload(index, stats):
+    print("Loading data")
+    index.reload()
+    (total_stats, domain_stats) = loadStats()
+    domain_stats = sorted(domain_stats, key=cmp_to_key(compareDomainStats))
+    stats["total_stats"] = total_stats
+    stats["domain_stats"] = domain_stats
+    print("domain_stats size: " + str(len(domain_stats)))
+
 schema = qihan_index.getSchema()
 index = qihan_index.getIndex(schema=schema)
-index.reload()
 searcher = index.searcher()
-(total_stats, domain_stats) = loadStats()
-domain_stats_list = []
-for item in domain_stats:
-    domain_stats_list.append(domain_stats[item])
-domain_stats_list = sorted(domain_stats_list, key=cmp_to_key(compareDomainStats))
+stats = {"total_stats": {}, "domain_stats": []}
+
+# total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "mail_seen":0, "phone_seen":0}
+# domain_stats = []
+
+reload(index, stats)
+print("domain_stats sizes: " + str(len(stats["domain_stats"])))
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
@@ -157,5 +169,6 @@ with gr.Blocks() as search_ui:
         textbox = gr.Textbox(lines=1, show_label=False)
         domain_stats_markdown = gr.Markdown(createDomainOverview())
         textbox.change(createDomainOverview, inputs=textbox, outputs=domain_stats_markdown)
+    # search_ui.load(reload(index, total_stats, domain_stats), inputs=None, outputs=None)
 
 search_ui.launch(share=False)

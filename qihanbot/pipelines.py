@@ -18,8 +18,7 @@ class QihanbotPipeline:
     domains_indexed = {}
     urls_seen = 0
     domains_seen = {}
-    mail_seen = 0
-    phone_seen = 0
+    url_error = 0
     
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
@@ -27,10 +26,8 @@ class QihanbotPipeline:
             self.process_url_seen(adapter)
         elif adapter.get("type") == "crawl":
             self.process_crawl_result(adapter)
-        elif adapter.get("type") == "mail":
-            self.process_mail(adapter)
-        elif adapter.get("type") == "phone":
-            self.process_phone(adapter)
+        elif adapter.get("type") == "url_error":
+            self.process_url_error(adapter)
         return item
         
     def should_index(self, adapter):
@@ -53,34 +50,27 @@ class QihanbotPipeline:
             self.domains_indexed[adapter.get("domain")] = self.domains_indexed.get(adapter.get("domain"), 0) + 1
             self.total_indexed += 1
             if self.total_indexed % 10000 == 0:
-                self.save_data()
+                self.save_stats()
 
     def process_url_seen(self, adapter):
         self.urls_seen += 1
         self.domains_seen[adapter.get("domain")] = self.domains_seen.get(adapter.get("domain"), 0) + 1
         return
 
-    def process_mail(self, adapter):
-        self.mail_seen += 1
-        return
-
-    def process_phone(self, adapter):
-        self.phone_seen += 1
+    def process_url_error(self, adapter):
+        self.url_error += 1
         return
         
     def open_spider(self, spider):
         self.index = qihan_index.getIndex()
         self.index_writer = self.index.writer()
         
-    def save_data(self):
-        self.index_writer.commit()
-        self.index_writer.wait_merging_threads()
+    def save_stats(self):
         with open("stats.txt", 'w') as stats_file:
             stats_file.write("total_crawled: " + str(self.total_crawled))
             stats_file.write("\ntotal_indexed: " + str(self.total_indexed))
             stats_file.write("\nurls_seen: " + str(self.urls_seen))
-            stats_file.write("\nmail_seen: " + str(self.mail_seen))
-            stats_file.write("\nphone_seen: " + str(self.phone_seen))
+            stats_file.write("\nurl_error: " + str(self.url_error))
             for domain in self.domains_crawled:
                 stats_file.write("\ndomain_crawled:" + domain + " " + str(self.domains_crawled[domain]))
             for domain in self.domains_indexed:
@@ -89,4 +79,6 @@ class QihanbotPipeline:
                 stats_file.write("\ndomain_seen:" + domain + " " + str(self.domains_seen[domain]))
 
     def close_spider(self, spider):
-        self.save_data()
+        self.index_writer.commit()
+        self.index_writer.wait_merging_threads()
+        self.save_stats()

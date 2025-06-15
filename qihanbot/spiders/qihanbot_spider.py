@@ -79,13 +79,11 @@ class QihanBot(scrapy.Spider):
                 "domain": crawl_util.matchDomain(self.allowed_domains, response.url)}
             next_urls = response.xpath("//a/@href").getall()
             for next_url in next_urls:
-                if next_url.startswith("mailto:"):
-                    yield {"type": "mail", "url": next_url}
+                try:
+                    next_request = response.follow(next_url)
+                except ValueError:
+                    yield {"type": "url_error", "url": next_url}
                     continue
-                if next_url.startswith("tel:"):
-                    yield {"type": "phone", "url": next_url}
-                    continue
-                next_request = response.follow(next_url)
                 if not next_request.url.startswith("http"):
                     yield {"type": "nonhttp", "url": next_request.url}
                     continue
