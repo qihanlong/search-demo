@@ -47,7 +47,7 @@ def run_search(query, version=0) -> str | None:
             output = output + "\n\n" + formatted_text
     results_parse_end_time = time.time()
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
-    output = output + "Search took " + str(search_time_ms) + " ms.\n\n\n\n"
+    output = output + "\n\nSearch took " + str(search_time_ms) + " ms.\n\n\n\n"
     return output
     
 def loadStats(filename="stats.txt"):
