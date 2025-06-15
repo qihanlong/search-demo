@@ -130,25 +130,20 @@ def compareDomainStats(domain1, domain2):
         return 1
     return 0
 
-def reload(index, stats):
-    print("Loading data")
+def reload():
     index.reload()
     (total_stats, domain_stats) = loadStats()
     domain_stats = sorted(domain_stats, key=cmp_to_key(compareDomainStats))
     stats["total_stats"] = total_stats
     stats["domain_stats"] = domain_stats
-    print("domain_stats size: " + str(len(domain_stats)))
+    return (createStatsOverview(), createDomainOverview())
 
 schema = qihan_index.getSchema()
 index = qihan_index.getIndex(schema=schema)
 searcher = index.searcher()
 stats = {"total_stats": {}, "domain_stats": []}
 
-# total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "mail_seen":0, "phone_seen":0}
-# domain_stats = []
-
-reload(index, stats)
-print("domain_stats sizes: " + str(len(stats["domain_stats"])))
+reload()
 
 print("Launching UI")
 with gr.Blocks() as search_ui:
@@ -165,10 +160,10 @@ with gr.Blocks() as search_ui:
         button2.click(partial(run_search, version=2), inputs=textbox, outputs=results)
         button3.click(partial(run_search, version=3), inputs=textbox, outputs=results)
     with gr.Accordion("Statistics", open=False):
-        gr.Markdown(createStatsOverview())
+        overall_stats_markdown = gr.Markdown(createStatsOverview())
         textbox = gr.Textbox(lines=1, show_label=False)
         domain_stats_markdown = gr.Markdown(createDomainOverview())
         textbox.change(createDomainOverview, inputs=textbox, outputs=domain_stats_markdown)
-    # search_ui.load(reload(index, total_stats, domain_stats), inputs=None, outputs=None)
+    search_ui.load(reload, outputs=(overall_stats_markdown, domain_stats_markdown))
 
 search_ui.launch(share=False)
