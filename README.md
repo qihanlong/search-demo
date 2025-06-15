@@ -16,7 +16,6 @@ Simple crawl and search engine.
 - Search statistics
 
 ## TODO
-- Improve crawl url selection
 - Improve search rankings
-- Test full scale crawl and indexing
+- Allow dynamic index reloading
 - Write documentation

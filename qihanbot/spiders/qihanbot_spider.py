@@ -15,8 +15,7 @@ class QihanBot(scrapy.Spider):
     max_downloads = 100
     max_downloads_per_domain = 10
     custom_settings = {
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
-        "DOWNLOAD_DELAY": 0.1,
+        "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
         "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
         "ROBOTSTXT_USER_AGENT": "qihanbot",
     }

@@ -52,6 +52,8 @@ class QihanbotPipeline:
                 retrieval_date=[adapter.get("date")]))
             self.domains_indexed[adapter.get("domain")] = self.domains_indexed.get(adapter.get("domain"), 0) + 1
             self.total_indexed += 1
+            if self.total_indexed % 10000 == 0:
+                self.save_data()
 
     def process_url_seen(self, adapter):
         self.urls_seen += 1
@@ -69,11 +71,11 @@ class QihanbotPipeline:
     def open_spider(self, spider):
         self.index = qihan_index.getIndex()
         self.index_writer = self.index.writer()
-
-    def close_spider(self, spider):
+        
+    def save_data(self):
         self.index_writer.commit()
         self.index_writer.wait_merging_threads()
-        with open("stats.txt", 'a') as stats_file:
+        with open("stats.txt", 'w') as stats_file:
             stats_file.write("total_crawled: " + str(self.total_crawled))
             stats_file.write("\ntotal_indexed: " + str(self.total_indexed))
             stats_file.write("\nurls_seen: " + str(self.urls_seen))
@@ -85,3 +87,6 @@ class QihanbotPipeline:
                 stats_file.write("\ndomain_indexed:" + domain + " " + str(self.domains_indexed[domain]))
             for domain in self.domains_seen:
                 stats_file.write("\ndomain_seen:" + domain + " " + str(self.domains_seen[domain]))
+
+    def close_spider(self, spider):
+        self.save_data()
