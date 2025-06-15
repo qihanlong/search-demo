@@ -19,9 +19,9 @@ class QihanBot(scrapy.Spider):
         "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
         "ROBOTSTXT_USER_AGENT": "qihanbot",
     }
-    priority_keywords = {"doc":2, "api":2, "ref":2, "forum":-2, "community":-2, "bug":-1, "user":-1, "issue":-1, "blog":-1}
+    priority_keywords = {"doc":2, "api":2, "ref":2, "wiki":1, "forum":-2, "community":-2, "bug":-1, "user":-1, "issue":-1, "blog":-1, "release": -1, "download":-1}
 
-    def __init__(self, config=None, *args, **kwargs):
+    def __init__(self, config="fullcrawl.config", *args, **kwargs):
         super(QihanBot, self).__init__(*args, **kwargs)
         if config:
             logging.info("opening " + config)
