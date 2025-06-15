@@ -67,7 +67,7 @@ class QihanBot(scrapy.Spider):
 
     def parse(self, response):
         content_type = response.headers.get("Content-Type")
-        if content_type.startswith(b"text/html"):
+        if content_type and content_type.startswith(b"text/html"):
             yield {"type": "crawl",
                 "url": response.url,
                 "body": response.xpath("//body").get(),
@@ -96,7 +96,11 @@ class QihanBot(scrapy.Spider):
                         next_request.priority += self.priority_keywords[keyword]
                     if keyword in parsed_url.netloc:
                         next_request.priority += self.priority_keywords[keyword]
+                if next_request.url.endswith(".html") or next_request.url.endswith(".htm"):
+                    next_request.priority += 2
                 yield {"type": "seen", "url": next_request.url, "domain": crawl_util.matchDomain(self.allowed_domains, next_request.url)}
+                if next_request.url.endswith(".pdf") or next_request.url.endswith(".zip") or next_request.url.endswith(".gz"):
+                    continue
                 yield next_request
 
 
