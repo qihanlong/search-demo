@@ -19,6 +19,8 @@ class QihanBot(scrapy.Spider):
         "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
         "ROBOTSTXT_USER_AGENT": "qihanbot",
     }
+
+    # Keywords in the url that's used to direct the priority queue for crawling.
     priority_keywords = {"doc":2, "api":2, "ref":2, "wiki":1, "forum":-2, "community":-2, "bug":-1, "user":-1, "issue":-1, "blog":-1, "release": -1, "download":-1}
 
     def __init__(self, config="fullcrawl.config", *args, **kwargs):
@@ -54,6 +56,7 @@ class QihanBot(scrapy.Spider):
                         self.allowed_domains.add(line)
         self.updateAllowedDomains()
 
+    # Adds the domains of the starting urls to the list of allowed domains.
     def updateAllowedDomains(self):
         logging.info("updateAllowedDomains called")
         if not isinstance(self.allowed_domains, list):
@@ -77,6 +80,8 @@ class QihanBot(scrapy.Spider):
                 "misc": response.xpath("//div/text()").getall() + response.xpath("//span/text()").getall(),
                 "date": datetime.today(),
                 "domain": crawl_util.matchDomain(self.allowed_domains, response.url)}
+            
+            # Add all links in the response to the scheduler.
             next_urls = response.xpath("//a/@href").getall()
             for next_url in next_urls:
                 try:
@@ -94,9 +99,12 @@ class QihanBot(scrapy.Spider):
                         next_request.priority += self.priority_keywords[keyword]
                     if keyword in parsed_url.netloc:
                         next_request.priority += self.priority_keywords[keyword]
+                # Prioritize html extensions
                 if next_request.url.endswith(".html") or next_request.url.endswith(".htm"):
                     next_request.priority += 2
                 yield {"type": "seen", "url": next_request.url, "domain": crawl_util.matchDomain(self.allowed_domains, next_request.url)}
+                # Some common file types that we can't index, so we shouldn't bother
+                # scheduling them.
                 if next_request.url.endswith(".pdf") or next_request.url.endswith(".zip") or next_request.url.endswith(".gz"):
                     continue
                 yield next_request

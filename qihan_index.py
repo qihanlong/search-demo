@@ -1,3 +1,5 @@
+# Util file to build the schema and index.
+
 from pathlib import Path
 import tantivy
 

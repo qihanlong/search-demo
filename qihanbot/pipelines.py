@@ -20,6 +20,9 @@ class QihanbotPipeline:
     domains_seen = {}
     url_error = 0
     
+    # Routes the outputs from the spider to its appropriate
+    # handler. Besides the crawled results, the rest of the
+    # outputs are just logging statistics.
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
         if adapter.get("type") == "seen":
@@ -33,6 +36,10 @@ class QihanbotPipeline:
     def should_index(self, adapter):
         return adapter.get("text") is not None and adapter.get("url") is not None
     
+    # Actual crawled urls are handled by this function.
+    # Writes the crawled data into the index.
+    # Every 10,000 indexed outputs, the index and logged stats
+    # are written to disc.
     def process_crawl_result(self, adapter):
         self.domains_crawled[adapter.get("domain")] = self.domains_crawled.get(adapter.get("domain"), 0) + 1
         self.total_crawled += 1

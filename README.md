@@ -1,5 +1,5 @@
 # search-demo
-Simple crawler and search engine for finding code documentation.
+Simple crawler and search engine experiment for finding code documentation.
 
 ## Installation and Requirements
 
@@ -23,7 +23,7 @@ This defaults to the `fullcrawl.config` settings, but I've also provided `smallc
 scrapy crawl qihanbot -a config=minicrawl.config
 ```
 
-After the crawl is underway, the UI can be started with the following command. A local url will appear in the shell (usually 127.0.0.1:7860).
+After the crawl is underway, the UI can be started with the following command. A local url will appear in the shell (usually http://127.0.0.1:7860).
 ```
 python3 ui.py
 ```

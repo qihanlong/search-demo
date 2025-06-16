@@ -7,26 +7,20 @@ from tantivy import SnippetGenerator
 
 _MARKDOWN_CHARACTERS_TO_REMOVE = set("`*_{}[]<>()#+-.!|\n")
 
+# Cleans up markdown characters from the search snippets.
 def sanitize_markdown(text: str) -> str:
     return "".join(
         '' if character in _MARKDOWN_CHARACTERS_TO_REMOVE else character 
         for character in text
     )    
 
-def get_field_boost(version):
-    if version == 1:
-        return {"title":3, "headers":2, "misc":0.5}
-    if version == 2:
-        return {"title":3, "headers":2, "text":1, "url":1, "misc":0.5}
-    if version == 3:
-        return {"title":2, "headers":2, "text":1, "url":1, "misc":0}
-    return {"title":3, "headers":2, "text":1, "url":1, "misc":0.5}
-
+# Takes the query from the text box, runs the search, then outputs the results as
+# a markdown string.
 def run_search(query, version=0) -> str | None:
     if len(query) == 0:
         return None
     search_start_time = time.time()
-    query = index.parse_query(query, ["title", "headers", "text", "misc", "url"], get_field_boost(version))
+    query = index.parse_query(query, ["title", "headers", "text", "misc", "url"], {"title":3, "headers":2, "text":1, "url":1, "misc":0.5})
     output = ""
     results = searcher.search(query, 10).hits
     search_end_time = time.time()
@@ -44,11 +38,13 @@ def run_search(query, version=0) -> str | None:
             output = formatted_text
         else:
             output = output + "\n\n" + formatted_text
+        output = output + "\n\n" + "Last Retrieved On: " + doc["retrieval_date"]
     results_parse_end_time = time.time()
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
     output = output + "\n\nSearch took " + str(search_time_ms) + " ms.\n\n\n\n"
     return output
-    
+
+# Loads some interesting crawler statistics to display 
 def loadStats(filename="stats.txt"):
     total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "url_error":0}
     domain_stats = {}
@@ -108,7 +104,8 @@ def createDomainOverview(query=""):
             if j >= 100:
                 break
     return markdown
-    
+
+# Comparer to sort domain statistics
 def compareDomainStats(domain1, domain2):
     if domain1.get("domain_indexed", 0) > domain2.get("domain_indexed", 0):
         return -1
@@ -128,6 +125,7 @@ def compareDomainStats(domain1, domain2):
         return 1
     return 0
 
+# Reloads the index and crawl statistics
 def reload():
     index.reload()
     (total_stats, domain_stats) = loadStats()
