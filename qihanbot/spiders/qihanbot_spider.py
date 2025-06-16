@@ -73,7 +73,6 @@ class QihanBot(scrapy.Spider):
         if content_type and content_type.startswith(b"text/html"):
             yield {"type": "crawl",
                 "url": response.url,
-                "body": response.xpath("//body").get(),
                 "title": response.xpath("//title/text()").get(),
                 "headers": response.xpath("//h1/text()").getall() + response.xpath("//h2/text()").getall() + response.xpath("//h3/text()").getall() + response.xpath("//h4/text()").getall(),
                 "text": response.xpath("//p/text()").getall(),

@@ -48,7 +48,6 @@ class QihanbotPipeline:
             body_text = adapter.get("body") or ''
             self.index_writer.add_document(tantivy.Document(
                 title=[title_text],
-                body=[body_text],
                 url=adapter.get("url"),
                 headers=adapter.get("headers"),
                 text=adapter.get("text"),
@@ -87,5 +86,5 @@ class QihanbotPipeline:
                 stats_file.write("\ndomain_seen:" + domain + " " + str(self.domains_seen[domain]))
 
     def close_spider(self, spider):
-        self.index_writer.wait_merging_threads()
         self.save()
+        self.index_writer.wait_merging_threads()
