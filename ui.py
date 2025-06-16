@@ -3,6 +3,7 @@ import gradio as gr
 import qihan_index
 import tantivy
 import time
+from datetime import datetime
 from tantivy import SnippetGenerator
 
 _MARKDOWN_CHARACTERS_TO_REMOVE = set("`*_{}[]<>()#+-.!|\n")
@@ -38,7 +39,7 @@ def run_search(query, version=0) -> str | None:
             output = formatted_text
         else:
             output = output + "\n\n" + formatted_text
-        output = output + "\n\n" + "Last Retrieved On: " + doc["retrieval_date"]
+        output = output + "\n\n" + "Last Retrieved On: " + doc["retrieval_date"][0].strftime("%m/%d/%Y")
     results_parse_end_time = time.time()
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
     output = output + "\n\nSearch took " + str(search_time_ms) + " ms.\n\n\n\n"
