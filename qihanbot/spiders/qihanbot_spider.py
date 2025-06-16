@@ -74,9 +74,9 @@ class QihanBot(scrapy.Spider):
             yield {"type": "crawl",
                 "url": response.url,
                 "title": response.xpath("//title/text()").get(),
-                "headers": response.xpath("//h1/text()").getall() + response.xpath("//h2/text()").getall() + response.xpath("//h3/text()").getall() + response.xpath("//h4/text()").getall(),
-                "text": response.xpath("//p/text()").getall(),
-                "misc": response.xpath("//div/text()").getall() + response.xpath("//span/text()").getall(),
+                "headers": [p for p in (response.xpath("//h1/text()").getall() + response.xpath("//h2/text()").getall() + response.xpath("//h3/text()").getall() + response.xpath("//h4/text()").getall()) if len(p) > 2],
+                "text": [p for p in response.xpath("//p/text()").getall() if len(p) > 4],
+                "misc": [p for p in (response.xpath("//div/text()").getall() + response.xpath("//span/text()").getall()) if len(p) > 4],
                 "date": datetime.today(),
                 "domain": crawl_util.matchDomain(self.allowed_domains, response.url)}
             
