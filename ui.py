@@ -50,7 +50,7 @@ def run_search(query, version=0) -> str | None:
     return output
     
 def loadStats(filename="stats.txt"):
-    total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "mail_seen":0, "phone_seen":0}
+    total_stats = {"total_crawled":0, "total_indexed":0, "urls_seen":0, "url_error":0}
     domain_stats = {}
     domain_keys = ["domain_crawled", "domain_indexed", "domain_seen"]
     with open(filename, 'r') as file:
@@ -84,8 +84,7 @@ def createStatsOverview():
     markdown += "\n\nTotal Urls Crawled: " + str(stats["total_stats"]["total_crawled"])
     markdown += "\n\nTotal Urls Indexed: " + str(stats["total_stats"]["total_indexed"])
     markdown += "\n\nTotal Urls Seen: " + str(stats["total_stats"]["urls_seen"])
-    markdown += "\n\nEmail Links Seen: " + str(stats["total_stats"]["mail_seen"])
-    markdown += "\n\nPhone Links Seen: " + str(stats["total_stats"]["phone_seen"])
+    markdown += "\n\nBad Urls: " + str(stats["total_stats"]["url_error"])
     return markdown
     
 def domainToMarkdown(domain):
