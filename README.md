@@ -1,27 +1,36 @@
 # search-demo
-Simple crawl and search engine.
+Simple crawler and search engine for finding code documentation.
 
-## Installation and Running
+## Installation and Requirements
 
-## Technical Details
+This was developed in python 3.11, but any python3 version should work. Clone the repository locally and finish the setup with the following command.
 
-## Choices
+```
+pip install -r requirements
+```
 
+## Running
 
-## Completed
-- Select crawler
-- Select index
-- Crawl domain restrictions
-- crawl max download restrctions
-- Small scale crawl of ~100 urls from 4 domains
-- Exporting data to index
-- Basic UI
-- Basic querying from index
-- Set up crawl settings for easy switching between small and full scale crawls
-- Snippet support
-- Search latency
-- Search statistics
-- live reloading of stats and index
+In the directory of the local installation, the crawler can be started with:
+
+```
+scrapy crawl qihanbot
+```
+
+This defaults to the `fullcrawl.config` settings, but I've also provided `smallcrawl.config` and `minicrawl.config` settings for testing the crawler. These can be ran with
+
+```
+scrapy crawl qihanbot -a config=minicrawl.config
+```
+
+After the crawl is underway, the UI can be started with the following command. A local url will appear in the shell (usually 127.0.0.1:7860).
+```
+python3 ui.py
+```
+
+## [Overview](overview.md)
+
+## [Technical Details](techinical_details.md)
 
 ## TODO
 - Improve search rankings
