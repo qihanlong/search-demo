@@ -1,6 +1,13 @@
 # search-demo
 Simple crawl and search engine.
 
+## Installation and Running
+
+## Technical Details
+
+## Choices
+
+
 ## Completed
 - Select crawler
 - Select index
@@ -14,8 +21,8 @@ Simple crawl and search engine.
 - Snippet support
 - Search latency
 - Search statistics
+- live reloading of stats and index
 
 ## TODO
 - Improve search rankings
-- Allow dynamic index reloading
 - Write documentation

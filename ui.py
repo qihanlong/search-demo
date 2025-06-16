@@ -20,7 +20,7 @@ def get_field_boost(version):
         return {"title":3, "headers":2, "text":1, "url":1, "misc":0.5}
     if version == 3:
         return {"title":2, "headers":2, "text":1, "url":1, "misc":0}
-    return {}
+    return {"title":3, "headers":2, "text":1, "url":1, "misc":0.5}
 
 def run_search(query, version=0) -> str | None:
     if len(query) == 0:
@@ -40,7 +40,6 @@ def run_search(query, version=0) -> str | None:
         title = doc["title"][0]
         snippet = snippet_generator.snippet_from_doc(doc)
         formatted_text = "# [" + sanitize_markdown(title) + "](" + doc["url"][0] + ")  \n" + sanitize_markdown(snippet.fragment())
-        print(formatted_text)
         if output == '':
             output = formatted_text
         else:
@@ -151,14 +150,9 @@ with gr.Blocks() as search_ui:
         with gr.Row(equal_height=True):
             textbox = gr.Textbox(lines=1, show_label=False)
             button = gr.Button("Search", variant="primary")
-            button1 = gr.Button("Search1", variant="primary")
-            button2 = gr.Button("Search2", variant="primary")
-            button3 = gr.Button("Search3", variant="primary")
         results = gr.Markdown("")
+        textbox.submit(run_search, inputs=textbox, outputs=results)
         button.click(run_search, inputs=textbox, outputs=results)
-        button1.click(partial(run_search, version=1), inputs=textbox, outputs=results)
-        button2.click(partial(run_search, version=2), inputs=textbox, outputs=results)
-        button3.click(partial(run_search, version=3), inputs=textbox, outputs=results)
     with gr.Accordion("Statistics", open=False):
         overall_stats_markdown = gr.Markdown(createStatsOverview())
         textbox = gr.Textbox(lines=1, show_label=False)
@@ -166,4 +160,4 @@ with gr.Blocks() as search_ui:
         textbox.change(createDomainOverview, inputs=textbox, outputs=domain_stats_markdown)
     search_ui.load(reload, outputs=(overall_stats_markdown, domain_stats_markdown))
 
-search_ui.launch(share=False)
+search_ui.launch(share=True)
