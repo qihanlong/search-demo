@@ -29,7 +29,7 @@ After the crawl is initiated, the UI can be started with the following command. 
 python3 ui.py
 ```
 
-## [Technical Details](techinical_details.md)
+## [Technical Details](technical_details.md)
 
 ## [Discussion](discussion.md)
 

@@ -36,7 +36,7 @@ My implementation followed Scrapy's general guidelines, with the home page of th
 
 Handling the per domain cap was trickier due to Scrapy's architecture. If I set the capped a domain at indexing time, I couldn't easily clean out the urls that were already queued, causing a lot of urls that would be crawled only to be dropped. Checking for the cap in the spider before sending the next request to the scheduler would cause the url to be deduped, but still counted towards the cap. So, I extended the scheduler to check for the domain cap right before it is queued. This would mean that the number of indexed pages would be slightly lower since some pages are dropped after the crawler sees the contents, but in practice it would be quite close. If the 10,000 domain cap had to be strictly followed, I would implement the check at both the indexing time and the scheduling time, with the scheduling cap being slightly higher.
 
-When integrating with Tantivy, I used Scrapy's built in xpath html selectors to choose the content that would be indexed. I didn't do too much tweaking on this, but I used it to select the page title, headers, <p>, <div>, and <span> text. I hacked a check to make sure that the text has a minimum size (~4 characters) to avoid filling the index with content that can't be searched.
+When integrating with Tantivy, I used Scrapy's built in xpath html selectors to choose the content that would be indexed. I didn't do too much tweaking on this, but I used it to select the page title, headers, `<p>`, `<div>`, and `<span>` text. I hacked a check to make sure that the text has a minimum size (~4 characters) to avoid filling the index with content that can't be searched.
 
 ### Domain Restrictions
 
@@ -65,17 +65,17 @@ My initial index and search implementation had latency issues, sometimes hitting
 - Increased the cloud VM's RAM to 16GB from 4GB.
 - Reduced the index size.
 	- Removed the html body from the index since that was just for testing and not actually used for searching.
-	- No longer index any text that's less than 2 characters for <p> tags and 4 characters for <div> and <span> tags.
+	- No longer index any text that's less than 2 characters for `<p>` tags and 4 characters for `<div>` and `<span>` tags.
 
 Tantivy's python library only had limited controls for manipulating the index. For example, the Rust version had multithreading controls that I can't access through python. In addition, I noticed that Vespa provided a timeout in its API, which would be helpful for setting a hard limit. I didn't see anything similar in Tantivy.
 
-I've considered dropping the <div> and <span> tags from the index, but they didn't quite have a negative impact on the index after suppressing short text lengths. Some websites may put text directly in those two tags, but I haven't encountered one in the domains that I've checked.
+I've considered dropping the `<div>` and `<span>` tags from the index, but they didn't quite have a negative impact on the index after suppressing short text lengths. Some websites may put text directly in those two tags, but I haven't encountered one in the domains that I've checked.
 
 Overall, I think reducing the index size had the biggest impact on latency reduction. In my first version, a lot of entries were indexed with no real searchable content, likely from divs that just contain other elements. As of my last test, the index consisted of 160,000 documents and search took around 4ms. There will be more latency as the index grows, but it shouldn't go over 50ms.
 
 ## Search Relevancy
 
-I left the search optimizations fairly simple since I don't expect too much SEO abuse in the domain restrictions. Since the index composed of the text in the page title, headers, <p>, <div>, and <span> tags, I weighted the search query roughly in that order. The title had the highest weight and the <div> and <span> tags had the same minimal weight.
+I left the search optimizations fairly simple since I don't expect too much SEO abuse in the domain restrictions. Since the index composed of the text in the page title, headers, `<p>`, `<div>`, and `<span>` tags, I weighted the search query roughly in that order. The title had the highest weight and the `<div>` and `<span>` tags had the same minimal weight.
 
 I've tried multiple different boost weight distributions as well as adding some hidden weighted terms to the query (i.e. `api` or `documentation`), but I didn't see much of a difference. This could have been contributed by the smaller crawl runs I used for testing. Downloading significant number of documents from a domain could take hours if I didn't want to risk getting banned. So iterating on the index was difficult.
 
