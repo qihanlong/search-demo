@@ -33,8 +33,10 @@ def run_search(query, version=0) -> str | None:
         (score, doc_address) = results[i]
         doc = searcher.doc(doc_address)
         title = doc["title"][0]
-        snippet = snippet_generator.snippet_from_doc(doc)
-        formatted_text = "# [" + sanitize_markdown(title) + "](" + doc["url"][0] + ")  \n" + sanitize_markdown(snippet.fragment())
+        snippet = sanitize_markdown(snippet_generator.snippet_from_doc(doc).fragment())
+        if len(snippet.strip()) == 0:
+            snippet = "`No snippet available`"
+        formatted_text = "# [" + sanitize_markdown(title) + "](" + doc["url"][0] + ")  \n" + snippet
         if output == '':
             output = formatted_text
         else:
