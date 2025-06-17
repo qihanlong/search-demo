@@ -32,7 +32,3 @@ python3 ui.py
 ## [Technical Details](technical_details.md)
 
 ## [Discussion](discussion.md)
-
-## TODO
-- Move settings to project level.
-- Write documentation
