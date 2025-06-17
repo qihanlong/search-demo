@@ -45,7 +45,6 @@ class QihanbotPipeline:
         self.total_crawled += 1
         if self.should_index(adapter):
             title_text = adapter.get("title") or ''
-            body_text = adapter.get("body") or ''
             self.index_writer.add_document(tantivy.Document(
                 title=[title_text],
                 url=adapter.get("url"),

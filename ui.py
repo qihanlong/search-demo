@@ -38,11 +38,12 @@ def run_search(query, version=0) -> str | None:
         if output == '':
             output = formatted_text
         else:
-            output = output + "\n\n" + formatted_text
-        output = output + "\n\n" + "Last Retrieved On: " + doc["retrieval_date"][0].strftime("%m/%d/%Y")
+            output += "\n\n" + formatted_text
+        output += "\n\n[" + doc["url"][0] + "](" + doc["url"][0] + ")"
+        output += "\n\n" + "Last Retrieved On: " + doc["retrieval_date"][0].strftime("%m/%d/%Y")
     results_parse_end_time = time.time()
     search_time_ms = (results_parse_end_time - search_start_time) * 1000
-    output = output + "\n\nSearch took " + str(search_time_ms) + " ms.\n\n\n\n"
+    output = "Search took " + str(search_time_ms) + " ms.\n\n\n\n" + output
     return output
 
 # Loads some interesting crawler statistics to display 
