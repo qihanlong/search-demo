@@ -14,11 +14,6 @@ class QihanBot(scrapy.Spider):
     allowed_domains = {}
     max_downloads = 100
     max_downloads_per_domain = 10
-    custom_settings = {
-        "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
-        "USER_AGENT": "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo",
-        "ROBOTSTXT_USER_AGENT": "qihanbot",
-    }
 
     # Keywords in the url that's used to direct the priority queue for crawling.
     priority_keywords = {"doc":2, "api":2, "ref":2, "wiki":1, "forum":-2, "community":-2, "bug":-1, "user":-1, "issue":-1, "blog":-1, "release": -1, "download":-1}

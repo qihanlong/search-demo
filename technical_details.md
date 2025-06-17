@@ -5,7 +5,7 @@
 The crawler uses Scrapy as its engine. The crawler sends the following user agent and obeys rules for `qihanbot`. The crawl is capped at 2 concurrent connections per domain with back-offs based on the domain's response latency. All these settings can be updated in the `qihanbot/settings.py` file (see https://docs.scrapy.org/en/latest/topics/settings.html for details).
 
 ```
-Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot https://github.com/qihanlong/search-demo
+Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.20 (KHTML, like Gecko) Chrome/11.0.672.2 Safari/534.20 qihanbot (+https://github.com/qihanlong/search-demo)
 ```
 
 ### Crawl Configuration
