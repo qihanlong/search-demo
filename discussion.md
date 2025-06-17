@@ -85,7 +85,9 @@ Overall, I think the quality of the search results still leaves much to be desir
 
 The crawler doesn't interact well with restarting. Once restarted, it will lose track of the queue and dupes resulting in recrawling much of the same sites. This isn't an issue if freshness is needed, but restarts could prevent the crawler from finding new pages due to excessive recrawls. Restarts also clears the internal counters on the crawl caps. So a new crawl can allow the index to go over the 10,000 urls per domain cap. A production ready crawler should not have this limitation.
 
-There can be race conditions in both the crawler and UI. I'm unfamiliar with Twisted Reactor (Scrapy's event scheduler) nor did I have the time to dig into Scrapy's implementation. From what I can tell, the code I implemented should be single threaded, but the documentation only implied that. I didn't notice any race conditions appearing either, but this is something I'd investigate in greater deal for a larger scale project. 
+There can be race conditions in both the crawler and UI. I'm unfamiliar with Twisted Reactor (Scrapy's event scheduler) nor did I have the time to dig into Scrapy's implementation. From what I can tell, the code I implemented for scrapy should be single threaded, but the documentation only implied that. I didn't notice any race conditions appearing either, but this is something I'd investigate in greater deal for a larger scale project.
+
+The UI's index reloading mechanics can suffer if spammed, so its not designed to handle high traffic volume.
 
 
 
